@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Subnets — NeuralChain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+:root{--black:#0A0A0A;--white:#F5F5F2;--off:#EAEAE6;--gray:#9A9A9A;--dim:#555;--indigo:#5B4FE8;--cyan:#00D4FF;--f-display:'DM Sans',sans-serif;--f-mono:'DM Mono',monospace;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:16px;}body{background:var(--white);color:var(--black);font-family:var(--f-display);overflow-x:hidden;cursor:none;}
+#cur{position:fixed;width:9px;height:9px;background:var(--indigo);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .18s,height .18s,background .18s;}
+#curR{position:fixed;width:34px;height:34px;border:1px solid rgba(91,79,232,.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .22s,height .22s;}
+#loader{position:fixed;inset:0;background:var(--black);z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;}
+.ld-logo{font-size:2.4rem;font-weight:700;color:var(--white);letter-spacing:-.02em;overflow:hidden;}
+.ld-inner{display:block;transform:translateY(110%);}
+.ld-track{width:180px;height:1px;background:rgba(255,255,255,.08);}
+.ld-fill{height:1px;background:var(--indigo);width:0%;}
+.ld-pct{font-family:var(--f-mono);font-size:.65rem;color:rgba(255,255,255,.25);letter-spacing:.14em;}
+#nav{position:fixed;top:0;left:0;right:0;z-index:500;padding:0 48px;height:64px;display:flex;align-items:center;justify-content:space-between;transition:background .35s,border-color .35s;border-bottom:1px solid transparent;}
+#nav.on-dark{background:rgba(10,10,10,.88);backdrop-filter:blur(18px);border-color:rgba(255,255,255,.07);}
+#nav.on-light{background:rgba(245,245,242,.92);backdrop-filter:blur(18px);border-color:rgba(0,0,0,.07);}
+.nlogo{font-size:1rem;font-weight:700;letter-spacing:-.01em;text-decoration:none;transition:color .3s;}
+#nav.on-dark .nlogo{color:var(--white);}#nav.on-light .nlogo{color:var(--black);}
+.nlinks{display:flex;align-items:center;gap:32px;list-style:none;}
+.nlinks a{font-size:.82rem;font-weight:400;text-decoration:none;transition:color .2s;}
+#nav.on-dark .nlinks a{color:rgba(255,255,255,.5);}#nav.on-light .nlinks a{color:rgba(0,0,0,.45);}
+.nlinks a:hover{color:var(--indigo)!important;opacity:1!important;}
+.nlinks a.active{color:var(--indigo)!important;opacity:1!important;}
+.ncta{padding:8px 20px;border-radius:6px;font-size:.82rem;font-weight:500;text-decoration:none;border:1px solid;}
+#nav.on-dark .ncta{background:rgba(255,255,255,.06);color:var(--white)!important;border-color:rgba(255,255,255,.18);}
+#nav.on-light .ncta{background:var(--black);color:var(--white)!important;border-color:var(--black);}
+
+/* PAGE HERO */
+.page-hero{
+  background:radial-gradient(ellipse at 30% 50%,#1A1040 0%,#0D0820 40%,#060410 100%);
+  padding:160px 52px 120px;
+  position:relative;overflow:hidden;
+}
+.page-hero::after{
+  content:'SUBNETS';position:absolute;right:-2vw;top:50%;transform:translateY(-50%);
+  font-size:clamp(6rem,16vw,14rem);font-weight:700;letter-spacing:-.05em;
+  color:transparent;-webkit-text-stroke:1px rgba(160,149,255,.05);
+  pointer-events:none;line-height:1;
+}
+.ph-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1;}
+.ph-tag{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+.ph-tag::before{content:'';width:18px;height:1px;background:var(--cyan);}
+.ph-h1{font-size:clamp(2.4rem,5vw,5rem);font-weight:700;letter-spacing:-.03em;color:var(--white);line-height:1.08;margin-bottom:24px;max-width:760px;}
+.ph-h1 .grad{background:linear-gradient(120deg,#A095FF,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ph-desc{font-size:1.05rem;line-height:1.8;color:rgba(255,255,255,.4);font-weight:300;max-width:520px;margin-bottom:48px;}
+.ph-stats{display:flex;gap:48px;}
+.ph-stat-v{font-size:clamp(2rem,3.5vw,3rem);font-weight:700;letter-spacing:-.04em;color:var(--white);line-height:1;}
+.ph-stat-l{font-family:var(--f-mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-top:6px;}
+
+/* FILTER BAR */
+.filter-bar{background:var(--white);border-bottom:1px solid #DEDED8;padding:0 52px;position:sticky;top:64px;z-index:100;}
+.filter-inner{max-width:1200px;margin:0 auto;display:flex;gap:4px;padding:16px 0;overflow-x:auto;scrollbar-width:none;}
+.filter-inner::-webkit-scrollbar{display:none;}
+.filter-btn{font-family:var(--f-mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;padding:7px 16px;border-radius:4px;border:1px solid #DEDED8;background:transparent;color:var(--gray);cursor:pointer;white-space:nowrap;transition:all .2s;}
+.filter-btn:hover,.filter-btn.active{background:var(--black);color:var(--white);border-color:var(--black);}
+
+/* SUBNETS GRID */
+.subnets-section{padding:80px 52px 140px;background:var(--white);}
+.sg-inner{max-width:1200px;margin:0 auto;}
+.sg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#DEDED8;}
+.sg-card{
+  background:var(--white);padding:44px 36px 48px;
+  position:relative;overflow:hidden;
+  transition:background .3s,transform .3s;
+  cursor:default;
+}
+.sg-card:hover{background:#0D0820;transform:none;}
+.sg-card:hover .sgc-num,.sg-card:hover .sgc-name{color:var(--white);}
+.sg-card:hover .sgc-body{color:rgba(255,255,255,.45);}
+.sg-card:hover .sgc-tag{color:var(--cyan);border-color:rgba(0,212,255,.2);}
+.sg-card:hover .sgc-div{background:rgba(255,255,255,.07);}
+.sg-card:hover .sgc-sl{color:rgba(255,255,255,.3);}
+.sg-card:hover .sgc-sv{color:var(--white);}
+.sg-card:hover .sgc-status-live{color:#4ADE80;}
+.sgc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;}
+.sgc-num{font-family:var(--f-mono);font-size:.62rem;color:var(--gray);letter-spacing:.1em;transition:color .3s;}
+.sgc-live-dot{width:6px;height:6px;background:#4ADE80;border-radius:50%;animation:ldot 2s ease-in-out infinite;}
+@keyframes ldot{0%,100%{opacity:1}50%{opacity:.2}}
+.sgc-tag{display:inline-block;font-family:var(--f-mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--indigo);border:1px solid rgba(91,79,232,.18);padding:3px 9px;margin-bottom:14px;border-radius:2px;transition:all .3s;}
+.sgc-name{font-weight:600;font-size:1.15rem;letter-spacing:-.02em;color:var(--black);margin-bottom:12px;line-height:1.2;transition:color .3s;}
+.sgc-body{font-size:.85rem;line-height:1.72;color:var(--dim);font-weight:300;transition:color .3s;}
+.sgc-div{height:1px;background:#DEDED8;margin:24px 0;transition:background .3s;}
+.sgc-bottom{display:flex;justify-content:space-between;align-items:center;}
+.sgc-sl{font-family:var(--f-mono);font-size:.6rem;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;transition:color .3s;}
+.sgc-sv{font-weight:600;font-size:.9rem;color:var(--black);transition:color .3s;}
+/* FEATURED card — spans 2 cols */
+.sg-card.featured{grid-column:span 2;background:linear-gradient(135deg,#0D0820,#1A1040);border:none;}
+.sg-card.featured .sgc-num,.sg-card.featured .sgc-name{color:var(--white);}
+.sg-card.featured .sgc-body{color:rgba(255,255,255,.45);}
+.sg-card.featured .sgc-tag{color:var(--cyan);border-color:rgba(0,212,255,.2);}
+.sg-card.featured .sgc-div{background:rgba(255,255,255,.08);}
+.sg-card.featured .sgc-sl{color:rgba(255,255,255,.3);}
+.sg-card.featured .sgc-sv{color:var(--white);}
+.sg-card.featured:hover{background:linear-gradient(135deg,#141028,#221850);}
+
+/* HOW SUBNETS WORK */
+.how-section{background:var(--black);padding:140px 52px;}
+.how-inner{max-width:1200px;margin:0 auto;}
+.eyebrow{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:10px;margin-bottom:48px;}
+.eyebrow::before{content:'';width:18px;height:1px;background:var(--dim);}
+.eyebrow.light{color:rgba(255,255,255,.3);}
+.eyebrow.light::before{background:rgba(255,255,255,.3);}
+.sh2{font-weight:700;font-size:clamp(2rem,3.8vw,3.4rem);line-height:1.12;letter-spacing:-.025em;margin-bottom:72px;}
+.sh2.light{color:var(--white);}
+.how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.05);}
+.how-step{background:var(--black);padding:48px 36px;border-bottom:2px solid transparent;transition:border-color .3s;}
+.how-step:hover{border-color:var(--indigo);}
+.hs-num{font-family:var(--f-mono);font-size:.62rem;color:rgba(255,255,255,.2);letter-spacing:.1em;margin-bottom:32px;}
+.hs-icon{width:48px;height:48px;border-radius:10px;background:rgba(91,79,232,.12);border:1px solid rgba(91,79,232,.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:24px;}
+.hs-title{font-weight:600;font-size:1.1rem;letter-spacing:-.02em;color:var(--white);margin-bottom:12px;}
+.hs-body{font-size:.875rem;line-height:1.75;color:rgba(255,255,255,.38);font-weight:300;}
+
+/* LAUNCH CTA */
+.launch-section{background:var(--white);padding:140px 52px;}
+.launch-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:2px;background:#DEDED8;}
+.lc-cell{padding:72px 60px;}
+.lc-cell.dark{background:var(--black);}
+.lc-cell.light{background:var(--white);}
+.lc-cell h3{font-weight:700;font-size:clamp(1.8rem,3vw,2.8rem);letter-spacing:-.03em;line-height:1.1;margin-bottom:20px;}
+.lc-cell.dark h3{color:var(--white);}
+.lc-cell.light h3{color:var(--black);}
+.lc-cell p{font-size:.98rem;line-height:1.85;font-weight:300;margin-bottom:36px;}
+.lc-cell.dark p{color:rgba(255,255,255,.38);}
+.lc-cell.light p{color:var(--dim);}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--indigo),#8B7FFF);color:var(--white);padding:12px 28px;border-radius:6px;font-size:.85rem;font-weight:500;text-decoration:none;transition:transform .2s,box-shadow .2s;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(91,79,232,.3);}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(0,0,0,.2);color:var(--black);padding:11px 24px;border-radius:6px;font-size:.85rem;font-weight:400;text-decoration:none;transition:border-color .2s;}
+.btn-ghost:hover{border-color:var(--black);}
+.lc-reqs{display:flex;flex-direction:column;gap:14px;}
+.req-item{display:flex;align-items:flex-start;gap:12px;padding:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;}
+.req-icon{width:32px;height:32px;border-radius:6px;background:rgba(91,79,232,.15);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+.req-text h4{font-size:.9rem;font-weight:500;color:var(--white);margin-bottom:2px;}
+.req-text p{font-size:.78rem;color:rgba(255,255,255,.3);font-weight:300;line-height:1.5;}
+
+/* FOOTER */
+footer{background:var(--black);border-top:1px solid rgba(255,255,255,.06);padding:72px 52px 44px;}
+.ft-top{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:52px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:32px;}
+.ft-logo{font-weight:700;font-size:1.2rem;color:var(--white);letter-spacing:-.02em;text-decoration:none;}
+.ft-nav{display:flex;gap:64px;}
+.ft-col h4{font-family:var(--f-mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:16px;}
+.ft-col ul{list-style:none;display:flex;flex-direction:column;gap:9px;}
+.ft-col ul li a{font-size:.85rem;color:rgba(255,255,255,.38);text-decoration:none;font-weight:300;transition:color .2s;}
+.ft-col ul li a:hover{color:rgba(255,255,255,.78);}
+.ft-bot{display:flex;justify-content:space-between;align-items:center;}
+.ft-bot p{font-family:var(--f-mono);font-size:.6rem;color:rgba(255,255,255,.16);letter-spacing:.06em;}
+.live{display:flex;align-items:center;gap:7px;font-family:var(--f-mono);font-size:.6rem;color:rgba(255,255,255,.16);letter-spacing:.08em;}
+.live-dot{width:5px;height:5px;background:#22C55E;border-radius:50%;animation:lp 2s ease-in-out infinite;}
+@keyframes lp{0%,100%{opacity:1}50%{opacity:.2}}
+.rv{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease;}
+.rv.in{opacity:1;transform:none;}
+.d1{transition-delay:.1s;}.d2{transition-delay:.2s;}.d3{transition-delay:.3s;}
+@media(max-width:900px){
+  #nav{padding:0 20px;}.nlinks{display:none;}
+  .page-hero,.subnets-section,.how-section,.launch-section{padding-left:20px;padding-right:20px;}
+  .sg-grid{grid-template-columns:1fr;}
+  .sg-card.featured{grid-column:span 1;}
+  .how-steps{grid-template-columns:1fr;}
+  .launch-inner{grid-template-columns:1fr;}
+  .lc-cell{padding:44px 28px;}
+  .filter-bar{padding:0 20px;}
+  footer{padding:56px 20px 36px;}
+  .ft-top{flex-direction:column;gap:36px;}.ft-nav{gap:32px;flex-wrap:wrap;}
+}
+</style>
+</head>
+<body>
+<div id="cur"></div><div id="curR"></div>
+<div id="loader">
+  <div class="ld-logo"><span class="ld-inner">NeuralChain</span></div>
+  <div class="ld-track"><div class="ld-fill" id="ldFill"></div></div>
+  <div class="ld-pct" id="ldPct">0%</div>
+</div>
+<nav id="nav" class="on-dark">
+  <a href="index.html" class="nlogo">NeuralChain</a>
+  <ul class="nlinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="subnets.html" class="active">Subnets</a></li>
+    <li><a href="token.html">TAO</a></li>
+    <li><a href="ecosystem.html">Ecosystem</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="build.html" class="ncta">Start Building</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="page-hero" id="phero">
+  <div class="ph-inner">
+    <div class="ph-tag">The Subnet Ecosystem</div>
+    <h1 class="ph-h1">Specialized markets for every kind of <span class="grad">intelligence.</span></h1>
+    <p class="ph-desc">Each subnet is an independent AI marketplace with its own incentive structure, miners, and validators. Together they form the most powerful open AI network on earth.</p>
+    <div class="ph-stats">
+      <div><div class="ph-stat-v" data-count="50" data-sfx="+">0+</div><div class="ph-stat-l">Active Subnets</div></div>
+      <div><div class="ph-stat-v" data-count="4000" data-sfx="+">0+</div><div class="ph-stat-l">GPU Nodes</div></div>
+      <div><div class="ph-stat-v" data-count="85" data-sfx="%">0%</div><div class="ph-stat-l">Cheaper than AWS</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FILTER -->
+<div class="filter-bar">
+  <div class="filter-inner">
+    <button class="filter-btn active" onclick="filterCards('all',this)">All Subnets</button>
+    <button class="filter-btn" onclick="filterCards('language',this)">Language</button>
+    <button class="filter-btn" onclick="filterCards('compute',this)">Compute</button>
+    <button class="filter-btn" onclick="filterCards('data',this)">Data</button>
+    <button class="filter-btn" onclick="filterCards('storage',this)">Storage</button>
+    <button class="filter-btn" onclick="filterCards('audio',this)">Audio</button>
+    <button class="filter-btn" onclick="filterCards('vision',this)">Vision</button>
+    <button class="filter-btn" onclick="filterCards('finance',this)">Finance</button>
+  </div>
+</div>
+
+<!-- SUBNET GRID -->
+<section class="subnets-section">
+  <div class="sg-inner">
+    <div class="sg-grid" id="sgGrid">
+
+      <div class="sg-card featured rv" data-cat="language">
+        <div class="sgc-top"><div class="sgc-num">SN — 19</div><div class="sgc-live-dot"></div></div>
+        <div class="sgc-tag">Language Models</div>
+        <div class="sgc-name">Open LLM Access</div>
+        <p class="sgc-body">The flagship language model subnet. Provides decentralized access to the world's best open-source LLMs including Llama, Mistral, and Falcon — outperforming traditional model-as-a-service providers on both latency and cost. Miners compete on output quality, validators ensure accuracy.</p>
+        <div class="sgc-div"></div>
+        <div class="sgc-bottom"><span class="sgc-sl">Status</span><span class="sgc-sv" style="color:#4ADE80">● Live</span></div>
+      </div>
+
+      <div class="sg-card rv d1" data-cat="compute">
+        <div class="sgc-top"><div class="sgc-num">SN — 64</div><div class="sgc-live-dot"></div></div>
+        <div class="sgc-tag">Compute</div>
+        <div class="sgc-name">Chutes — Serverless GPU</div>
+        <p class="sgc-body">Deploy and scale AI models instantly on a serverless platform backed by 4,000+ globally distributed GPUs. Zero infrastructure management required.</p>
+        <div class="sgc-div"></div>
+        <div class="sgc-bottom"><span class="sgc-sl">GPU Nodes</span><span class="sgc-sv">4,000+</span></div>
+      </div>
+
+      <div class="sg-card rv d1" data-cat="data">
+        <div class="sgc-top"><div class="sgc-num">SN — 42</div><div class="sgc-live-dot"></div></div>
+        <div class="sgc-tag">Data</div>
+        <div class="sgc-name">Masa Network</div>
+        <p class="sgc-body">Real-time data scraping and indexing from Twitter, Discord, TikTok and more. Feed your AI with live, structured data at global scale.</p>
+        <div class="sgc-div"></div>
+        <div class="sgc-bottom"><span class="sgc-sl">Sources</span><span class="sgc-sv">Twitter · Discord · TikTok</span></div>
+      </div>
+
+      <div class="sg-card rv d2" data-cat="compute">
+        <div class="sgc-top"><div class="sgc-num">SN — 41</div><div class="sgc-live-dot"></div></div>
+        <div class="sgc-tag">Compute</div>
+        <div class="sgc-name">Celium — P2P GPU</div>
+        <p class="sgc-body">High-performance GPU hardware at 85% lower cost than AWS. Peer-to-peer compute, globally distributed, always available to any developer.</p>
+        <div class="sgc-div"></div>
+        <div class="sgc-bottom"><span class="sgc-sl">Cost vs AWS</span><span class="sgc-sv">85% cheaper</span></div>
+      </div>
+
+      <div class="sg-card rv d2" data-cat="storage">
+        <div class="sgc-top"><div class="sgc-num">SN — 21</div><div class="sgc-live-dot"></div></div>
+        <div class="sgc-tag">Storage</div>
+        <div class="sgc-name">Distributed Storage</div>
+        <p class="sgc-body">Censorship-resistant, multi-node redundant data storage the entire network can rely on. Incentivized miners, always on, always available.</p>
+        <div class="sgc-div"></div>
+        <div class="sgc-bottom"><span class="sgc-sl">Redundancy</span><span class="sgc-sv">Multi-node</span></div>
+      </div>
+
+      <div class="sg-card rv d3" data-cat="audio">
+        <div class="sgc-top"><div class="sgc-num">SN — 44</div><div class="sgc-live-dot"></div></div>
+        <div class="sgc-tag">Audio</div>
+        <div class="sgc-name">Text-to-Speech</div>
+        <p class="sgc-body">Miners compete to generate the most natural-sounding audio from text. Quality is continuously evaluated — only the best voices earn TAO rewards.</p>
+        <div class="sgc-div"></div>
+        <div class="sgc-bottom"><span class="sgc-sl">Quality</span><span class="sgc-sv">Competition-driven</span></div>
+      </div>
+
+      <div class="sg-card rv" data-cat="vision">
+        <div class="sgc-top"><div class="sgc-num">SN — 26</div></div>
+        <div class="sgc-tag">Vision</div>
+        <div class="sgc-name">Image Generation</div>
+        <p class="sgc-body">Decentralized image synthesis subnet. Miners generate high-quality images using diffusion models, competing on visual quality and speed.</p>
+        <div class="sgc-div"></div>
+        <div class="sgc-bottom"><span class="sgc-sl">Models</span><span class="sgc-sv">SDXL · Flux</span></div>
+      </div>
+
+      <div class="sg-card rv d1" data-cat="finance">
+        <div class="sgc-top"><div class="sgc-num">SN — 08</div></div>
+        <div class="sgc-tag">Finance</div>
+        <div class="sgc-name">Market Prediction</div>
+        <p class="sgc-body">Financial forecasting subnet where miners submit price predictions for crypto and traditional assets. Validators score accuracy over time.</p>
+        <div class="sgc-div"></div>
+        <div class="sgc-bottom"><span class="sgc-sl">Assets tracked</span><span class="sgc-sv">1,200+</span></div>
+      </div>
+
+      <div class="sg-card rv d2" data-cat="language">
+        <div class="sgc-top"><div class="sgc-num">SN — 01</div></div>
+        <div class="sgc-tag">Language</div>
+        <div class="sgc-name">Root Network</div>
+        <p class="sgc-body">The governance layer. Validators in the root network vote on which subnets receive a larger slice of TAO emissions based on performance.</p>
+        <div class="sgc-div"></div>
+        <div class="sgc-bottom"><span class="sgc-sl">Role</span><span class="sgc-sv">Governance</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- HOW SUBNETS WORK -->
+<section class="how-section" id="how">
+  <div class="how-inner">
+    <div class="eyebrow light rv">How Subnets Work</div>
+    <h2 class="sh2 light rv d1">Every subnet is its own<br/>competitive AI market.</h2>
+    <div class="how-steps">
+      <div class="how-step rv d1">
+        <div class="hs-num">01</div>
+        <div class="hs-icon">🏗️</div>
+        <div class="hs-title">Subnet Creator</div>
+        <p class="hs-body">Anyone can launch a subnet by bonding TAO. No permission required — just commitment and code. The creator designs the incentive structure for their specific AI task.</p>
+      </div>
+      <div class="how-step rv d2">
+        <div class="hs-num">02</div>
+        <div class="hs-icon">⛏️</div>
+        <div class="hs-title">Miners Compete</div>
+        <p class="hs-body">Miners register on the subnet and begin providing AI outputs. They compete globally on quality, speed, and reliability. Better outputs earn more TAO.</p>
+      </div>
+      <div class="how-step rv d3">
+        <div class="hs-num">03</div>
+        <div class="hs-icon">⚖️</div>
+        <div class="hs-title">Validators Score</div>
+        <p class="hs-body">Validators continuously evaluate miner outputs using the subnet's custom scoring logic. Yuma Consensus aggregates scores into final rankings and distributes TAO rewards.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LAUNCH CTA -->
+<section class="launch-section" id="launch">
+  <div class="launch-inner">
+    <div class="lc-cell dark rv">
+      <div class="eyebrow light" style="margin-bottom:28px">For Builders</div>
+      <h3>Launch your own subnet today.</h3>
+      <p>Have an AI task that needs a decentralized marketplace? Bond TAO, define your incentive structure, and let the network do the rest. No permission required.</p>
+      <a href="build.html" class="btn-primary">Start Building →</a>
+    </div>
+    <div class="lc-cell light rv d2">
+      <div class="eyebrow" style="margin-bottom:28px">Requirements</div>
+      <h3>What you need to launch.</h3>
+      <div class="lc-reqs">
+        <div class="req-item" style="background:var(--off);border-color:#DEDED8;">
+          <div class="req-icon" style="background:rgba(91,79,232,.08);border:1px solid rgba(91,79,232,.15);">💎</div>
+          <div class="req-text"><h4 style="color:var(--black)">TAO Bond</h4><p style="color:var(--gray)">Bond TAO to register your subnet slot on the network.</p></div>
+        </div>
+        <div class="req-item" style="background:var(--off);border-color:#DEDED8;">
+          <div class="req-icon" style="background:rgba(91,79,232,.08);border:1px solid rgba(91,79,232,.15);">📋</div>
+          <div class="req-text"><h4 style="color:var(--black)">Incentive Design</h4><p style="color:var(--gray)">Define how miners are scored and how rewards flow.</p></div>
+        </div>
+        <div class="req-item" style="background:var(--off);border-color:#DEDED8;">
+          <div class="req-icon" style="background:rgba(91,79,232,.08);border:1px solid rgba(91,79,232,.15);">🛠️</div>
+          <div class="req-text"><h4 style="color:var(--black)">Validator Logic</h4><p style="color:var(--gray)">Write the validator code that scores miner outputs for your task.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer id="footer">
+  <div class="ft-top">
+    <a href="index.html" class="ft-logo">NeuralChain</a>
+    <nav class="ft-nav">
+      <div class="ft-col"><h4>Network</h4><ul><li><a href="subnets.html">Subnets</a></li><li><a href="ecosystem.html">Miners</a></li><li><a href="ecosystem.html">Validators</a></li></ul></div>
+      <div class="ft-col"><h4>Developers</h4><ul><li><a href="build.html">Documentation</a></li><li><a href="build.html">SDK</a></li><li><a href="build.html">GitHub</a></li></ul></div>
+      <div class="ft-col"><h4>Resources</h4><ul><li><a href="about.html">Whitepaper</a></li><li><a href="token.html">TAO Token</a></li><li><a href="about.html">Blog</a></li></ul></div>
+    </nav>
+  </div>
+  <div class="ft-bot">
+    <p>© 2026 NeuralChain — Portfolio by Soham Gorhe</p>
+    <div class="live"><div class="live-dot"></div>Network live · 50+ subnets</div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+// CURSOR
+const cur=document.getElementById('cur'),curR=document.getElementById('curR');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function a(){rx+=(mx-rx)*.13;ry+=(my-ry)*.13;cur.style.left=mx+'px';cur.style.top=my+'px';curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(a);})();
+document.querySelectorAll('a,button').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='18px';cur.style.height='18px';cur.style.background='var(--cyan)';});
+  el.addEventListener('mouseleave',()=>{cur.style.width='9px';cur.style.height='9px';cur.style.background='var(--indigo)';});
+});
+// LOADER
+const ldFill=document.getElementById('ldFill'),ldPct=document.getElementById('ldPct'),loader=document.getElementById('loader');
+gsap.to('.ld-inner',{y:0,duration:.65,ease:'power3.out',delay:.1});
+let lp=0;const liv=setInterval(()=>{lp+=Math.random()*9+5;if(lp>=100){lp=100;clearInterval(liv);setTimeout(()=>gsap.to(loader,{opacity:0,duration:.4,ease:'power2.in',onComplete:()=>{loader.style.display='none';}}),200);}ldFill.style.width=lp+'%';ldPct.textContent=Math.floor(lp)+'%';},50);
+// NAV
+const navEl=document.getElementById('nav');
+function updateNav(){const mid=64;let dark=false;['phero','how','footer'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const r=el.getBoundingClientRect();if(r.top<mid&&r.bottom>mid)dark=true;});navEl.className=dark?'on-dark':'on-light';}
+window.addEventListener('scroll',updateNav,{passive:true});updateNav();
+// REVEAL
+const ro=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('in');});},{threshold:.1});
+document.querySelectorAll('.rv').forEach(el=>ro.observe(el));
+// COUNTERS
+document.querySelectorAll('[data-count]').forEach(el=>{
+  new IntersectionObserver(([e])=>{if(!e.isIntersecting)return;
+    const t=parseFloat(el.dataset.count),sfx=el.dataset.sfx||'';let c=0;const inc=t/(1400/16);
+    const iv=setInterval(()=>{c+=inc;if(c>=t){c=t;clearInterval(iv);}el.textContent=Math.floor(c)+sfx;},16);
+  },{threshold:.6}).observe(el);
+});
+// FILTER
+function filterCards(cat,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.sg-card').forEach(card=>{
+    const show=cat==='all'||card.dataset.cat===cat;
+    card.style.display=show?'':'none';
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Ecosystem — NeuralChain</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<style>
+:root{--black:#0A0A0A;--white:#F5F5F2;--off:#EAEAE6;--gray:#9A9A9A;--dim:#555;--indigo:#5B4FE8;--cyan:#00D4FF;--f-display:'DM Sans',sans-serif;--f-mono:'DM Mono',monospace;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}html{font-size:16px;}body{background:var(--white);color:var(--black);font-family:var(--f-display);overflow-x:hidden;cursor:none;}
+#cur{position:fixed;width:9px;height:9px;background:var(--indigo);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .18s,height .18s,background .18s;}
+#curR{position:fixed;width:34px;height:34px;border:1px solid rgba(91,79,232,.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);}
+#loader{position:fixed;inset:0;background:var(--black);z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;}
+.ld-logo{font-size:2.4rem;font-weight:700;color:var(--white);letter-spacing:-.02em;overflow:hidden;}
+.ld-inner{display:block;transform:translateY(110%);}
+.ld-track{width:180px;height:1px;background:rgba(255,255,255,.08);}
+.ld-fill{height:1px;background:var(--indigo);width:0%;}
+.ld-pct{font-family:var(--f-mono);font-size:.65rem;color:rgba(255,255,255,.25);letter-spacing:.14em;}
+#nav{position:fixed;top:0;left:0;right:0;z-index:500;padding:0 48px;height:64px;display:flex;align-items:center;justify-content:space-between;transition:background .35s,border-color .35s;border-bottom:1px solid transparent;}
+#nav.on-dark{background:rgba(10,10,10,.88);backdrop-filter:blur(18px);border-color:rgba(255,255,255,.07);}
+#nav.on-light{background:rgba(245,245,242,.92);backdrop-filter:blur(18px);border-color:rgba(0,0,0,.07);}
+.nlogo{font-size:1rem;font-weight:700;letter-spacing:-.01em;text-decoration:none;transition:color .3s;}
+#nav.on-dark .nlogo{color:var(--white);}#nav.on-light .nlogo{color:var(--black);}
+.nlinks{display:flex;align-items:center;gap:32px;list-style:none;}
+.nlinks a{font-size:.82rem;font-weight:400;text-decoration:none;transition:color .2s;}
+#nav.on-dark .nlinks a{color:rgba(255,255,255,.5);}#nav.on-light .nlinks a{color:rgba(0,0,0,.45);}
+.nlinks a:hover,.nlinks a.active{color:var(--indigo)!important;}
+.ncta{padding:8px 20px;border-radius:6px;font-size:.82rem;font-weight:500;text-decoration:none;border:1px solid;}
+#nav.on-dark .ncta{background:rgba(255,255,255,.06);color:var(--white)!important;border-color:rgba(255,255,255,.18);}
+#nav.on-light .ncta{background:var(--black);color:var(--white)!important;border-color:var(--black);}
+/* HERO */
+.page-hero{background:radial-gradient(ellipse at 60% 40%,#1A1040,#0D0820 45%,#04030A 100%);padding:160px 52px 120px;position:relative;overflow:hidden;}
+.page-hero::after{content:'ECO';position:absolute;right:-1vw;top:50%;transform:translateY(-50%);font-size:clamp(8rem,20vw,18rem);font-weight:700;letter-spacing:-.05em;color:transparent;-webkit-text-stroke:1px rgba(160,149,255,.04);pointer-events:none;line-height:1;}
+.ph-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1;}
+.ph-tag{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+.ph-tag::before{content:'';width:18px;height:1px;background:var(--cyan);}
+.ph-h1{font-size:clamp(2.4rem,5vw,5rem);font-weight:700;letter-spacing:-.03em;color:var(--white);line-height:1.08;margin-bottom:24px;max-width:760px;}
+.ph-h1 .grad{background:linear-gradient(120deg,#A095FF,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ph-desc{font-size:1.05rem;line-height:1.8;color:rgba(255,255,255,.4);font-weight:300;max-width:520px;}
+/* ROLE SELECTOR */
+.role-nav{background:var(--white);border-bottom:1px solid #DEDED8;padding:0 52px;position:sticky;top:64px;z-index:100;}
+.rn-inner{max-width:1200px;margin:0 auto;display:flex;gap:0;}
+.rn-btn{padding:20px 36px;font-size:.85rem;font-weight:500;color:var(--gray);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;}
+.rn-btn:hover{color:var(--black);}
+.rn-btn.active{color:var(--indigo);border-bottom-color:var(--indigo);}
+/* ROLE SECTIONS */
+.role-section{padding:120px 52px;display:none;}
+.role-section.active{display:block;}
+.role-section.miners-bg{background:var(--white);}
+.role-section.validators-bg{background:var(--white);}
+.role-section.stakers-bg{background:var(--white);}
+.rs-inner{max-width:1200px;margin:0 auto;}
+.eyebrow{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:10px;margin-bottom:40px;}
+.eyebrow::before{content:'';width:18px;height:1px;background:currentColor;}
+.role-hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;margin-bottom:100px;}
+.rh-left h2{font-weight:700;font-size:clamp(2.2rem,4vw,3.8rem);letter-spacing:-.03em;line-height:1.1;color:var(--black);margin-bottom:24px;}
+.rh-left p{font-size:1.02rem;line-height:1.85;color:var(--dim);font-weight:300;margin-bottom:20px;}
+.role-badge{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:6px;font-family:var(--f-mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;margin-top:8px;}
+.rb-miners{background:rgba(91,79,232,.08);color:var(--indigo);border:1px solid rgba(91,79,232,.15);}
+.rb-validators{background:rgba(0,212,255,.08);color:var(--cyan);border:1px solid rgba(0,212,255,.15);}
+.rb-stakers{background:var(--off);color:var(--dim);border:1px solid #DEDED8;}
+.rh-right{background:var(--black);border-radius:16px;padding:40px;display:flex;flex-direction:column;gap:16px;}
+.rh-stat{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;}
+.rh-stat-l{font-family:var(--f-mono);font-size:.6rem;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;}
+.rh-stat-v{font-weight:600;font-size:1.05rem;color:var(--white);}
+.rh-stat-v.cyan{color:var(--cyan);}
+/* STEPS */
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#DEDED8;}
+.step-card{background:var(--white);padding:44px 36px;}
+.sc-n{font-family:var(--f-mono);font-size:.6rem;color:var(--gray);letter-spacing:.1em;margin-bottom:24px;}
+.sc-icon{width:48px;height:48px;border-radius:10px;background:rgba(91,79,232,.08);border:1px solid rgba(91,79,232,.15);display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:20px;}
+.sc-title{font-weight:600;font-size:1rem;color:var(--black);margin-bottom:10px;}
+.sc-body{font-size:.875rem;line-height:1.72;color:var(--dim);font-weight:300;}
+/* EARNINGS */
+.earnings-section{background:var(--black);padding:100px 52px;}
+.es-inner{max-width:1200px;margin:0 auto;}
+.earn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.06);margin-top:64px;}
+.earn-cell{background:var(--black);padding:44px 32px;}
+.ec-label{font-family:var(--f-mono);font-size:.6rem;color:rgba(255,255,255,.25);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;}
+.ec-val{font-size:clamp(2rem,4vw,3.2rem);font-weight:700;letter-spacing:-.04em;color:var(--white);line-height:1;margin-bottom:10px;}
+.ec-val span{color:var(--cyan);}
+.ec-desc{font-size:.85rem;line-height:1.7;color:rgba(255,255,255,.35);font-weight:300;}
+/* FAQ */
+.faq-section{background:var(--white);padding:120px 52px;}
+.faq-inner{max-width:800px;margin:0 auto;}
+.faq-item{border-top:1px solid #DEDED8;padding:28px 0;}
+.faq-item:last-child{border-bottom:1px solid #DEDED8;}
+.faq-q{font-weight:600;font-size:1rem;color:var(--black);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;}
+.faq-q .arr{font-size:1rem;color:var(--gray);transition:transform .3s;}
+.faq-item.open .faq-q .arr{transform:rotate(45deg);}
+.faq-a{font-size:.9rem;line-height:1.78;color:var(--dim);font-weight:300;max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s;}
+.faq-item.open .faq-a{max-height:300px;padding-top:16px;}
+/* CTA */
+.eco-cta{background:radial-gradient(ellipse at 50% 0%,#1A1040,#080612 60%);padding:160px 52px;text-align:center;}
+.ec-inner{max-width:660px;margin:0 auto;}
+.ec-h2{font-size:clamp(2.2rem,4.5vw,4.5rem);font-weight:700;letter-spacing:-.03em;color:var(--white);line-height:1.05;margin-bottom:24px;}
+.ec-h2 .grad{background:linear-gradient(120deg,#A095FF,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ec-p{font-size:1rem;line-height:1.78;color:rgba(255,255,255,.38);font-weight:300;margin-bottom:44px;}
+.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn-grad{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--indigo),#8B7FFF);color:var(--white);padding:12px 28px;border-radius:6px;font-size:.88rem;font-weight:500;text-decoration:none;transition:transform .2s,box-shadow .2s;}
+.btn-grad:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(91,79,232,.3);}
+.btn-outline-w{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.65);padding:11px 24px;border-radius:6px;font-size:.88rem;text-decoration:none;transition:border-color .2s,color .2s;}
+.btn-outline-w:hover{border-color:rgba(255,255,255,.5);color:var(--white);}
+footer{background:var(--black);border-top:1px solid rgba(255,255,255,.06);padding:72px 52px 44px;}
+.ft-top{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:52px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:32px;}
+.ft-logo{font-weight:700;font-size:1.2rem;color:var(--white);text-decoration:none;}
+.ft-nav{display:flex;gap:64px;}
+.ft-col h4{font-family:var(--f-mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:16px;}
+.ft-col ul{list-style:none;display:flex;flex-direction:column;gap:9px;}
+.ft-col ul li a{font-size:.85rem;color:rgba(255,255,255,.38);text-decoration:none;font-weight:300;transition:color .2s;}
+.ft-col ul li a:hover{color:rgba(255,255,255,.78);}
+.ft-bot{display:flex;justify-content:space-between;align-items:center;}
+.ft-bot p{font-family:var(--f-mono);font-size:.6rem;color:rgba(255,255,255,.16);}
+.live{display:flex;align-items:center;gap:7px;font-family:var(--f-mono);font-size:.6rem;color:rgba(255,255,255,.16);}
+.live-dot{width:5px;height:5px;background:#22C55E;border-radius:50%;animation:lp 2s ease-in-out infinite;}
+@keyframes lp{0%,100%{opacity:1}50%{opacity:.2}}
+.rv{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease;}
+.rv.in{opacity:1;transform:none;}
+.d1{transition-delay:.1s;}.d2{transition-delay:.2s;}.d3{transition-delay:.3s;}
+@media(max-width:900px){
+  #nav{padding:0 20px;}.nlinks{display:none;}
+  .page-hero,.role-section,.earnings-section,.faq-section,.eco-cta{padding-left:20px;padding-right:20px;}
+  .role-hero-grid,.steps-grid,.earn-grid{grid-template-columns:1fr;}
+  .role-nav{padding:0 20px;}
+  footer{padding:56px 20px 36px;}.ft-top{flex-direction:column;gap:36px;}.ft-nav{gap:32px;flex-wrap:wrap;}
+}
+</style>
+</head>
+<body>
+<div id="cur"></div><div id="curR"></div>
+<div id="loader"><div class="ld-logo"><span class="ld-inner">NeuralChain</span></div><div class="ld-track"><div class="ld-fill" id="ldFill"></div></div><div class="ld-pct" id="ldPct">0%</div></div>
+<nav id="nav" class="on-dark">
+  <a href="index.html" class="nlogo">NeuralChain</a>
+  <ul class="nlinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="subnets.html">Subnets</a></li>
+    <li><a href="token.html">TAO</a></li>
+    <li><a href="ecosystem.html" class="active">Ecosystem</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="build.html" class="ncta">Start Building</a></li>
+  </ul>
+</nav>
+<section class="page-hero" id="phero">
+  <div class="ph-inner">
+    <div class="ph-tag">The Ecosystem</div>
+    <h1 class="ph-h1">Three roles.<br/>One <span class="grad">open network.</span></h1>
+    <p class="ph-desc">Miners produce intelligence. Validators score it. Stakers back it. Together they form a self-sustaining, permissionless AI economy powered by TAO.</p>
+  </div>
+</section>
+<div class="role-nav">
+  <div class="rn-inner">
+    <button class="rn-btn active" onclick="showRole('miners',this)">⛏️ Miners</button>
+    <button class="rn-btn" onclick="showRole('validators',this)">⚖️ Validators</button>
+    <button class="rn-btn" onclick="showRole('stakers',this)">🏦 Stakers</button>
+  </div>
+</div>
+<!-- MINERS -->
+<div class="role-section miners-bg active" id="role-miners">
+  <div class="rs-inner">
+    <div class="role-hero-grid">
+      <div class="rh-left rv">
+        <div class="eyebrow" style="color:var(--indigo)">Role 01</div>
+        <h2>Mine intelligence.<br/>Earn TAO.</h2>
+        <p>Miners are the backbone of the NeuralChain network. They run AI models and provide real, useful computational outputs in response to tasks sent through the network.</p>
+        <p>The better your outputs — the more accurate, the faster, the more reliable — the higher your TAO rewards. Competition is global, open, and purely merit-based.</p>
+        <span class="role-badge rb-miners">⚡ Earn TAO Rewards</span>
+      </div>
+      <div class="rh-right rv d2">
+        <div class="rh-stat"><span class="rh-stat-l">Reward Type</span><span class="rh-stat-v cyan">TAO Emissions</span></div>
+        <div class="rh-stat"><span class="rh-stat-l">Scoring</span><span class="rh-stat-v">Yuma Consensus</span></div>
+        <div class="rh-stat"><span class="rh-stat-l">Min. Hardware</span><span class="rh-stat-v">GPU (8GB+ VRAM)</span></div>
+        <div class="rh-stat"><span class="rh-stat-l">Tasks Available</span><span class="rh-stat-v cyan">50+ Subnets</span></div>
+        <div class="rh-stat"><span class="rh-stat-l">Entry</span><span class="rh-stat-v">Permissionless</span></div>
+      </div>
+    </div>
+    <h3 class="rv" style="font-size:1.4rem;font-weight:600;letter-spacing:-.02em;color:var(--black);margin-bottom:36px;">How to become a miner</h3>
+    <div class="steps-grid rv d1">
+      <div class="step-card"><div class="sc-n">01</div><div class="sc-icon">💻</div><div class="sc-title">Set Up Hardware</div><p class="sc-body">You need a GPU with at least 8GB VRAM for most subnets. More powerful hardware enables more subnets and higher throughput.</p></div>
+      <div class="step-card"><div class="sc-n">02</div><div class="sc-icon">🔧</div><div class="sc-title">Install the SDK</div><p class="sc-body">Install the NeuralChain SDK via pip, create a wallet, and register on your chosen subnet by paying a small registration fee in TAO.</p></div>
+      <div class="step-card"><div class="sc-n">03</div><div class="sc-icon">🚀</div><div class="sc-title">Start Mining</div><p class="sc-body">Deploy your miner script, connect to the subnet, and begin responding to tasks. The network will score your outputs and reward you accordingly.</p></div>
+    </div>
+  </div>
+</div>
+<!-- VALIDATORS -->
+<div class="role-section validators-bg" id="role-validators">
+  <div class="rs-inner">
+    <div class="role-hero-grid">
+      <div class="rh-left rv">
+        <div class="eyebrow" style="color:var(--cyan)">Role 02</div>
+        <h2>Score the work.<br/>Keep it honest.</h2>
+        <p>Validators are the quality assurance layer of the NeuralChain network. They continuously evaluate miner outputs and submit scores that determine who gets rewarded.</p>
+        <p>Accurate, honest validators earn more. The Yuma Consensus mechanism is designed to make collusion unprofitable — precision is always the best strategy.</p>
+        <span class="role-badge rb-validators">🎯 Score &amp; Earn</span>
+      </div>
+      <div class="rh-right rv d2">
+        <div class="rh-stat"><span class="rh-stat-l">Reward Type</span><span class="rh-stat-v cyan">TAO Emissions</span></div>
+        <div class="rh-stat"><span class="rh-stat-l">Mechanism</span><span class="rh-stat-v">Yuma Consensus</span></div>
+        <div class="rh-stat"><span class="rh-stat-l">Min. Stake</span><span class="rh-stat-v">1,000 TAO</span></div>
+        <div class="rh-stat"><span class="rh-stat-l">Responsibility</span><span class="rh-stat-v">Output scoring</span></div>
+        <div class="rh-stat"><span class="rh-stat-l">Penalty</span><span class="rh-stat-v cyan">Slashing for fraud</span></div>
+      </div>
+    </div>
+    <h3 class="rv" style="font-size:1.4rem;font-weight:600;letter-spacing:-.02em;color:var(--black);margin-bottom:36px;">How Yuma Consensus works</h3>
+    <div class="steps-grid rv d1">
+      <div class="step-card"><div class="sc-n">01</div><div class="sc-icon">📋</div><div class="sc-title">Receive Outputs</div><p class="sc-body">Validators receive outputs from all active miners on a subnet. Each validator independently evaluates the quality of each output against the subnet's standards.</p></div>
+      <div class="step-card"><div class="sc-n">02</div><div class="sc-icon">🔢</div><div class="sc-title">Submit Scores</div><p class="sc-body">Each validator submits a weight vector ranking miners by output quality. These rankings are combined using the Shapley value framework to produce consensus scores.</p></div>
+      <div class="step-card"><div class="sc-n">03</div><div class="sc-icon">💰</div><div class="sc-title">Rewards Distributed</div><p class="sc-body">TAO emissions flow to miners and validators based on consensus scores. Validators who score accurately earn more — creating a permanent incentive for honest evaluation.</p></div>
+    </div>
+  </div>
+</div>
+<!-- STAKERS -->
+<div class="role-section stakers-bg" id="role-stakers">
+  <div class="rs-inner">
+    <div class="role-hero-grid">
+      <div class="rh-left rv">
+        <div class="eyebrow" style="color:var(--dim)">Role 03</div>
+        <h2>Stake TAO.<br/>Back the future.</h2>
+        <p>Stakers are the investors of the NeuralChain ecosystem. By staking TAO into subnets, they signal which AI markets deserve greater resource allocation.</p>
+        <p>Dynamic TAO uses an automated market maker for each subnet — staking TAO into a subnet increases its value and your proportional reward share. You become a Decentralized Cloud Provider.</p>
+        <span class="role-badge rb-stakers">📈 Stake &amp; Govern</span>
+      </div>
+      <div class="rh-right rv d2">
+        <div class="rh-stat"><span class="rh-stat-l">Mechanism</span><span class="rh-stat-v cyan">Dynamic TAO AMM</span></div>
+        <div class="rh-stat"><span class="rh-stat-l">Min. Stake</span><span class="rh-stat-v">Any amount</span></div>
+        <div class="rh-stat"><span class="rh-stat-l">Returns</span><span class="rh-stat-v">Subnet emissions</span></div>
+        <div class="rh-stat"><span class="rh-stat-l">Governance</span><span class="rh-stat-v cyan">Senate voting</span></div>
+        <div class="rh-stat"><span class="rh-stat-l">Liquidity</span><span class="rh-stat-v">Unstake anytime</span></div>
+      </div>
+    </div>
+    <h3 class="rv" style="font-size:1.4rem;font-weight:600;letter-spacing:-.02em;color:var(--black);margin-bottom:36px;">How staking works</h3>
+    <div class="steps-grid rv d1">
+      <div class="step-card"><div class="sc-n">01</div><div class="sc-icon">🔍</div><div class="sc-title">Choose a Subnet</div><p class="sc-body">Research the active subnets, their performance metrics, and their potential. Pick the subnets whose mission and output quality you believe in.</p></div>
+      <div class="step-card"><div class="sc-n">02</div><div class="sc-icon">💎</div><div class="sc-title">Stake TAO</div><p class="sc-body">Deposit TAO into your chosen subnet's reserve via the Dynamic TAO AMM. Your stake increases the subnet's market value and your proportional share of its emissions.</p></div>
+      <div class="step-card"><div class="sc-n">03</div><div class="sc-icon">📊</div><div class="sc-title">Earn Rewards</div><p class="sc-body">As the subnet performs well and grows, emissions flow proportionally to stakers. You can unstake anytime and vote on governance proposals with your staked weight.</p></div>
+    </div>
+  </div>
+</div>
+<!-- EARNINGS -->
+<section class="earnings-section" id="earnings">
+  <div class="es-inner">
+    <div class="eyebrow" style="color:rgba(255,255,255,.3);margin-bottom:48px">Network Economics</div>
+    <h2 class="rv" style="font-weight:700;font-size:clamp(2rem,3.8vw,3.4rem);letter-spacing:-.025em;color:var(--white);margin-bottom:0">The numbers behind<br/>the network.</h2>
+    <div class="earn-grid rv d1">
+      <div class="earn-cell"><div class="ec-label">Daily Emissions</div><div class="ec-val">3,<span>600</span></div><p class="ec-desc">TAO distributed daily to miners and validators as block rewards following the December 2025 halving.</p></div>
+      <div class="earn-cell"><div class="ec-label">Market Cap</div><div class="ec-val">$3.<span>43B</span></div><p class="ec-desc">Total market capitalization of all TAO in circulation, reflecting the network's growing utility and adoption.</p></div>
+      <div class="earn-cell"><div class="ec-label">GPU Nodes</div><div class="ec-val">4,<span>000+</span></div><p class="ec-desc">Active GPU nodes providing compute across the network's subnets, particularly on the Chutes serverless platform.</p></div>
+    </div>
+  </div>
+</section>
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="faq-inner">
+    <div class="eyebrow dark" style="margin-bottom:48px">Common Questions</div>
+    <h2 class="rv" style="font-weight:700;font-size:clamp(1.8rem,3.5vw,3rem);letter-spacing:-.025em;color:var(--black);margin-bottom:56px">Everything you need<br/>to get started.</h2>
+    <div class="faq-item rv" onclick="toggleFaq(this)"><div class="faq-q">How much TAO can I earn as a miner? <span class="arr">+</span></div><p class="faq-a">Earnings depend heavily on your hardware, the subnet you choose, and the quality of your outputs relative to other miners. Top miners on competitive subnets can earn significant TAO daily, but there's no guaranteed amount — it's a merit-based competition.</p></div>
+    <div class="faq-item rv d1" onclick="toggleFaq(this)"><div class="faq-q">Do I need to run a validator to participate? <span class="arr">+</span></div><p class="faq-a">No. You can participate as a miner with just a GPU, or as a staker with any amount of TAO. Validation requires a minimum TAO stake and more technical knowledge, but it's not required to earn rewards.</p></div>
+    <div class="faq-item rv d2" onclick="toggleFaq(this)"><div class="faq-q">What hardware do I need to mine? <span class="arr">+</span></div><p class="faq-a">Requirements vary by subnet. Most language model subnets require a GPU with at least 8GB VRAM (e.g., RTX 3090, 4090, or A100). Some subnets are more CPU-friendly. Check individual subnet documentation for specific requirements.</p></div>
+    <div class="faq-item rv d3" onclick="toggleFaq(this)"><div class="faq-q">Is staking safe? What are the risks? <span class="arr">+</span></div><p class="faq-a">Staking carries market risk — the value of TAO can go up or down. There's no slashing risk for regular stakers (slashing only applies to validators who collude). You can unstake at any time, though there may be a cooldown period.</p></div>
+    <div class="faq-item rv" onclick="toggleFaq(this)"><div class="faq-q">Can I participate from anywhere in the world? <span class="arr">+</span></div><p class="faq-a">Yes. NeuralChain is a permissionless, global network. Anyone with internet access and the required hardware (or TAO to stake) can participate — there are no geographic restrictions.</p></div>
+  </div>
+</section>
+<section class="eco-cta" id="ecta">
+  <div class="ec-inner rv">
+    <div class="eyebrow" style="color:rgba(255,255,255,.3);justify-content:center;margin-bottom:24px">Join Now</div>
+    <h2 class="ec-h2">Ready to join the <span class="grad">open AI economy?</span></h2>
+    <p class="ec-p">Pick your role, set up in minutes, and start contributing to the most ambitious decentralized AI network ever built.</p>
+    <div class="cta-btns">
+      <a href="build.html" class="btn-grad">Start Building →</a>
+      <a href="subnets.html" class="btn-outline-w">Explore Subnets</a>
+    </div>
+  </div>
+</section>
+<footer>
+  <div class="ft-top">
+    <a href="index.html" class="ft-logo">NeuralChain</a>
+    <nav class="ft-nav">
+      <div class="ft-col"><h4>Ecosystem</h4><ul><li><a href="ecosystem.html">Miners</a></li><li><a href="ecosystem.html">Validators</a></li><li><a href="ecosystem.html">Stakers</a></li></ul></div>
+      <div class="ft-col"><h4>Network</h4><ul><li><a href="subnets.html">Subnets</a></li><li><a href="token.html">TAO Token</a></li><li><a href="build.html">Build</a></li></ul></div>
+      <div class="ft-col"><h4>Resources</h4><ul><li><a href="about.html">About</a></li><li><a href="build.html">Docs</a></li><li><a href="about.html">Blog</a></li></ul></div>
+    </nav>
+  </div>
+  <div class="ft-bot"><p>© 2026 NeuralChain — Portfolio by Soham Gorhe</p><div class="live"><div class="live-dot"></div>Network live</div></div>
+</footer>
+<script>
+const cur=document.getElementById('cur'),curR=document.getElementById('curR');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function a(){rx+=(mx-rx)*.13;ry+=(my-ry)*.13;cur.style.left=mx+'px';cur.style.top=my+'px';curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(a);})();
+document.querySelectorAll('a,button').forEach(el=>{el.addEventListener('mouseenter',()=>{cur.style.width='18px';cur.style.height='18px';cur.style.background='var(--cyan)';});el.addEventListener('mouseleave',()=>{cur.style.width='9px';cur.style.height='9px';cur.style.background='var(--indigo)';});});
+const ldFill=document.getElementById('ldFill'),ldPct=document.getElementById('ldPct'),loader=document.getElementById('loader');
+gsap.to('.ld-inner',{y:0,duration:.65,ease:'power3.out',delay:.1});
+let lp=0;const liv=setInterval(()=>{lp+=Math.random()*9+5;if(lp>=100){lp=100;clearInterval(liv);setTimeout(()=>gsap.to(loader,{opacity:0,duration:.4,ease:'power2.in',onComplete:()=>{loader.style.display='none';}}),200);}ldFill.style.width=lp+'%';ldPct.textContent=Math.floor(lp)+'%';},50);
+const navEl=document.getElementById('nav');
+function updateNav(){const mid=64;let dark=false;['phero','earnings','ecta'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const r=el.getBoundingClientRect();if(r.top<mid&&r.bottom>mid)dark=true;});navEl.className=dark?'on-dark':'on-light';}
+window.addEventListener('scroll',updateNav,{passive:true});updateNav();
+const ro=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('in');});},{threshold:.1});
+document.querySelectorAll('.rv').forEach(el=>ro.observe(el));
+function showRole(role,btn){
+  document.querySelectorAll('.role-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.rn-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('role-'+role).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('role-'+role).scrollIntoView({behavior:'smooth',block:'start'});
+}
+function toggleFaq(item){item.classList.toggle('open');}
+</script>
+</body>
+</html>

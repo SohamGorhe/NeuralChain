@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TAO Token — NeuralChain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{--black:#0A0A0A;--white:#F5F5F2;--off:#EAEAE6;--gray:#9A9A9A;--dim:#555;--indigo:#5B4FE8;--cyan:#00D4FF;--f-display:'DM Sans',sans-serif;--f-mono:'DM Mono',monospace;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}html{font-size:16px;}
+body{background:var(--black);color:var(--white);font-family:var(--f-display);overflow-x:hidden;cursor:none;}
+#cur{position:fixed;width:9px;height:9px;background:var(--indigo);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .18s,height .18s,background .18s;}
+#curR{position:fixed;width:34px;height:34px;border:1px solid rgba(91,79,232,.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .22s,height .22s;}
+#loader{position:fixed;inset:0;background:var(--black);z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;}
+.ld-logo{font-size:2.4rem;font-weight:700;color:var(--white);letter-spacing:-.02em;overflow:hidden;}
+.ld-inner{display:block;transform:translateY(110%);}
+.ld-track{width:180px;height:1px;background:rgba(255,255,255,.08);}
+.ld-fill{height:1px;background:var(--indigo);width:0%;}
+.ld-pct{font-family:var(--f-mono);font-size:.65rem;color:rgba(255,255,255,.25);letter-spacing:.14em;}
+#nav{position:fixed;top:0;left:0;right:0;z-index:500;padding:0 48px;height:64px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,10,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.07);}
+.nlogo{font-size:1rem;font-weight:700;letter-spacing:-.01em;text-decoration:none;color:var(--white);}
+.nlinks{display:flex;align-items:center;gap:32px;list-style:none;}
+.nlinks a{font-size:.82rem;font-weight:400;text-decoration:none;color:rgba(255,255,255,.5);transition:color .2s;}
+.nlinks a:hover,.nlinks a.active{color:var(--indigo)!important;}
+.ncta{padding:8px 20px;border-radius:6px;font-size:.82rem;font-weight:500;text-decoration:none;border:1px solid;background:rgba(255,255,255,.06);color:var(--white)!important;border-color:rgba(255,255,255,.18);}
+/* HERO */
+.tok-hero{position:relative;height:100vh;min-height:640px;background:radial-gradient(ellipse at 30% 50%,#1A1040,#0D0820 45%,#04030A 100%);display:flex;align-items:flex-end;padding:0 52px 80px;overflow:hidden;}
+#tok-canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.7;}
+.th-content{position:relative;z-index:2;max-width:1200px;margin:0 auto;width:100%;}
+.ph-tag{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+.ph-tag::before{content:'';width:18px;height:1px;background:var(--cyan);}
+.th-h1{font-size:clamp(3rem,7vw,7rem);font-weight:700;letter-spacing:-.04em;line-height:.97;color:var(--white);margin-bottom:32px;opacity:0;}
+.th-h1 .stroke{-webkit-text-stroke:1.5px rgba(255,255,255,.25);color:transparent;}
+.th-bottom{display:flex;justify-content:space-between;align-items:flex-end;opacity:0;}
+.th-desc{max-width:400px;font-size:1rem;line-height:1.78;color:rgba(255,255,255,.38);font-weight:300;}
+.th-price{text-align:right;}
+.th-price-val{font-size:clamp(2.5rem,5vw,4.5rem);font-weight:700;letter-spacing:-.04em;background:linear-gradient(120deg,#A095FF,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;}
+.th-price-lbl{font-family:var(--f-mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-top:8px;}
+/* METRICS STRIP */
+.metrics-strip{background:#0A0A0A;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);}
+.ms-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:rgba(255,255,255,.05);}
+.ms-cell{background:var(--black);padding:36px 28px;}
+.ms-v{font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;letter-spacing:-.04em;color:var(--white);line-height:1;margin-bottom:8px;}
+.ms-v span{color:var(--cyan);}
+.ms-l{font-family:var(--f-mono);font-size:.6rem;color:rgba(255,255,255,.25);letter-spacing:.1em;text-transform:uppercase;}
+/* TOKENOMICS */
+.tok-section{padding:140px 52px;}
+.section-wrap{max-width:1200px;margin:0 auto;}
+.eyebrow{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:10px;margin-bottom:48px;}
+.eyebrow::before{content:'';width:18px;height:1px;}
+.eyebrow.light{color:rgba(255,255,255,.3);}
+.eyebrow.light::before{background:rgba(255,255,255,.3);}
+.eyebrow.dark{color:var(--dim);}
+.eyebrow.dark::before{background:var(--dim);}
+.sh2{font-weight:700;font-size:clamp(2rem,3.8vw,3.4rem);line-height:1.12;letter-spacing:-.025em;margin-bottom:64px;}
+.sh2.light{color:var(--white);}
+.sh2.dark-t{color:var(--black);}
+/* SUPPLY VISUAL */
+.supply-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;}
+.supply-chart{position:relative;}
+.supply-ring-wrap{width:280px;height:280px;margin:0 auto 48px;}
+.supply-ring-svg{width:100%;height:100%;transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:rgba(255,255,255,.06);stroke-width:20;}
+.ring-miners{fill:none;stroke:var(--indigo);stroke-width:20;stroke-dasharray:440 628;stroke-linecap:round;transition:stroke-dasharray 1.5s ease;}
+.ring-validators{fill:none;stroke:#7B6FF8;stroke-width:20;stroke-dasharray:0 628;stroke-dashoffset:-440;stroke-linecap:round;}
+.ring-stakers{fill:none;stroke:var(--cyan);stroke-width:20;stroke-dasharray:0 628;stroke-dashoffset:-503;stroke-linecap:round;}
+.ring-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;margin-top:-24px;}
+.ring-center-val{font-size:2.2rem;font-weight:700;letter-spacing:-.04em;color:var(--white);line-height:1;}
+.ring-center-lbl{font-family:var(--f-mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);margin-top:4px;}
+.legend{display:flex;flex-direction:column;gap:12px;margin-top:8px;}
+.legend-item{display:flex;align-items:center;gap:12px;}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.legend-label{font-size:.85rem;color:rgba(255,255,255,.6);font-weight:300;}
+.legend-pct{font-weight:600;color:var(--white);margin-left:auto;font-family:var(--f-mono);font-size:.82rem;}
+.supply-facts{display:flex;flex-direction:column;gap:20px;}
+.sfact{padding:28px 32px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;transition:background .3s,border-color .3s;}
+.sfact:hover{background:rgba(91,79,232,.08);border-color:rgba(91,79,232,.2);}
+.sfact-title{font-weight:600;font-size:1rem;color:var(--white);margin-bottom:8px;}
+.sfact-body{font-size:.875rem;line-height:1.72;color:rgba(255,255,255,.38);font-weight:300;}
+.sfact-val{font-family:var(--f-mono);font-size:.78rem;color:var(--cyan);margin-top:10px;letter-spacing:.05em;}
+/* HALVING TIMELINE */
+.halving-section{background:rgba(255,255,255,.02);border-top:1px solid rgba(255,255,255,.06);padding:140px 52px;}
+.halving-timeline{position:relative;margin-top:72px;}
+.ht-line{position:absolute;left:32px;top:0;bottom:0;width:1px;background:rgba(255,255,255,.08);}
+.ht-event{display:flex;gap:40px;align-items:flex-start;padding-bottom:56px;position:relative;}
+.ht-event:last-child{padding-bottom:0;}
+.ht-dot{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:.65rem;letter-spacing:.08em;flex-shrink:0;position:relative;z-index:1;}
+.ht-dot.past{background:rgba(91,79,232,.15);border:1px solid rgba(91,79,232,.3);color:var(--indigo);}
+.ht-dot.current{background:rgba(91,79,232,.25);border:2px solid var(--indigo);color:var(--white);box-shadow:0 0 24px rgba(91,79,232,.3);}
+.ht-dot.future{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.3);}
+.ht-content{}
+.ht-year{font-family:var(--f-mono);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:8px;}
+.ht-title{font-weight:600;font-size:1.2rem;color:var(--white);margin-bottom:8px;}
+.ht-body{font-size:.875rem;line-height:1.72;color:rgba(255,255,255,.38);font-weight:300;max-width:560px;}
+.ht-emission{margin-top:12px;font-family:var(--f-mono);font-size:.72rem;color:var(--cyan);letter-spacing:.08em;}
+/* TAO USES */
+.uses-section{padding:140px 52px;background:var(--white);}
+.uses-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#DEDED8;margin-top:72px;}
+.use-card{background:var(--white);padding:44px 36px;transition:background .3s;}
+.use-card:hover{background:var(--black);}
+.use-card:hover .uc-title,.use-card:hover .uc-body{color:var(--white);}
+.use-card:hover .uc-body{color:rgba(255,255,255,.45);}
+.use-card:hover .uc-icon{background:rgba(91,79,232,.2);border-color:rgba(91,79,232,.3);}
+.uc-icon{width:52px;height:52px;border-radius:12px;background:rgba(91,79,232,.08);border:1px solid rgba(91,79,232,.15);display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:24px;transition:all .3s;}
+.uc-title{font-weight:600;font-size:1.1rem;color:var(--black);margin-bottom:12px;transition:color .3s;}
+.uc-body{font-size:.875rem;line-height:1.72;color:var(--dim);font-weight:300;transition:color .3s;}
+/* CTA */
+.tok-cta{background:radial-gradient(ellipse at 50% 0%,#1A1040,#080612 60%);padding:160px 52px;text-align:center;}
+.tc-inner{max-width:700px;margin:0 auto;}
+.tc-h2{font-size:clamp(2.4rem,5vw,4.8rem);font-weight:700;letter-spacing:-.04em;color:var(--white);line-height:1.05;margin-bottom:24px;}
+.tc-h2 .grad{background:linear-gradient(120deg,#A095FF,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.tc-p{font-size:1.05rem;line-height:1.78;color:rgba(255,255,255,.38);font-weight:300;margin-bottom:48px;}
+.tc-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.btn-grad{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--indigo),#8B7FFF);color:var(--white);padding:13px 32px;border-radius:6px;font-size:.9rem;font-weight:500;text-decoration:none;transition:transform .2s,box-shadow .2s;}
+.btn-grad:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(91,79,232,.35);}
+.btn-outline-w{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.65);padding:12px 28px;border-radius:6px;font-size:.9rem;text-decoration:none;transition:border-color .2s,color .2s;}
+.btn-outline-w:hover{border-color:rgba(255,255,255,.5);color:var(--white);}
+footer{background:var(--black);border-top:1px solid rgba(255,255,255,.06);padding:72px 52px 44px;}
+.ft-top{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:52px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:32px;}
+.ft-logo{font-weight:700;font-size:1.2rem;color:var(--white);letter-spacing:-.02em;text-decoration:none;}
+.ft-nav{display:flex;gap:64px;}
+.ft-col h4{font-family:var(--f-mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:16px;}
+.ft-col ul{list-style:none;display:flex;flex-direction:column;gap:9px;}
+.ft-col ul li a{font-size:.85rem;color:rgba(255,255,255,.38);text-decoration:none;font-weight:300;transition:color .2s;}
+.ft-col ul li a:hover{color:rgba(255,255,255,.78);}
+.ft-bot{display:flex;justify-content:space-between;align-items:center;}
+.ft-bot p{font-family:var(--f-mono);font-size:.6rem;color:rgba(255,255,255,.16);letter-spacing:.06em;}
+.live{display:flex;align-items:center;gap:7px;font-family:var(--f-mono);font-size:.6rem;color:rgba(255,255,255,.16);}
+.live-dot{width:5px;height:5px;background:#22C55E;border-radius:50%;animation:lp 2s ease-in-out infinite;}
+@keyframes lp{0%,100%{opacity:1}50%{opacity:.2}}
+.rv{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease;}
+.rv.in{opacity:1;transform:none;}
+.d1{transition-delay:.1s;}.d2{transition-delay:.2s;}.d3{transition-delay:.3s;}
+@media(max-width:900px){
+  #nav{padding:0 20px;}.nlinks{display:none;}
+  .tok-hero{padding:0 20px 60px;}
+  .th-bottom{flex-direction:column;gap:24px;}
+  .tok-section,.halving-section,.uses-section,.tok-cta{padding-left:20px;padding-right:20px;}
+  .supply-grid,.ms-inner{grid-template-columns:1fr 1fr;}
+  .ms-inner{grid-template-columns:1fr 1fr;}
+  .uses-grid{grid-template-columns:1fr;}
+  footer{padding:56px 20px 36px;}
+  .ft-top{flex-direction:column;gap:36px;}.ft-nav{gap:32px;flex-wrap:wrap;}
+}
+</style>
+</head>
+<body>
+<div id="cur"></div><div id="curR"></div>
+<div id="loader"><div class="ld-logo"><span class="ld-inner">NeuralChain</span></div><div class="ld-track"><div class="ld-fill" id="ldFill"></div></div><div class="ld-pct" id="ldPct">0%</div></div>
+<nav id="nav">
+  <a href="index.html" class="nlogo">NeuralChain</a>
+  <ul class="nlinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="subnets.html">Subnets</a></li>
+    <li><a href="token.html" class="active">TAO</a></li>
+    <li><a href="ecosystem.html">Ecosystem</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="build.html" class="ncta">Start Building</a></li>
+  </ul>
+</nav>
+
+<section class="tok-hero" id="thero">
+  <canvas id="tok-canvas"></canvas>
+  <div class="th-content">
+    <div class="ph-tag">TAO Token</div>
+    <h1 class="th-h1">Bitcoin for AI.<br/><span class="stroke">Scarcity meets</span><br/>Intelligence.</h1>
+    <div class="th-bottom">
+      <p class="th-desc">TAO is the economic fuel of the NeuralChain network. Not just a speculative asset — the settlement layer for a decentralized AI economy.</p>
+      <div class="th-price">
+        <div class="th-price-val">$317</div>
+        <div class="th-price-lbl">TAO price · Apr 2026</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="metrics-strip">
+  <div class="ms-inner">
+    <div class="ms-cell"><div class="ms-v">21<span>M</span></div><div class="ms-l">Hard Cap</div></div>
+    <div class="ms-cell"><div class="ms-v">$3.<span>43B</span></div><div class="ms-l">Market Cap</div></div>
+    <div class="ms-cell"><div class="ms-v">3,<span>600</span></div><div class="ms-l">Daily Emissions</div></div>
+    <div class="ms-cell"><div class="ms-v">20<span>21</span></div><div class="ms-l">Fair Launch</div></div>
+    <div class="ms-cell"><div class="ms-v">$317</div><div class="ms-l">TAO Price</div></div>
+  </div>
+</div>
+
+<section class="tok-section" id="tokenom">
+  <div class="section-wrap">
+    <div class="eyebrow light rv">Tokenomics</div>
+    <h2 class="sh2 light rv d1">Designed for scarcity.<br/>Engineered for intelligence.</h2>
+    <div class="supply-grid">
+      <div class="supply-chart rv d1">
+        <div class="supply-ring-wrap" style="position:relative">
+          <svg class="supply-ring-svg" viewBox="0 0 200 200">
+            <circle class="ring-bg" cx="100" cy="100" r="80"/>
+            <circle class="ring-miners" cx="100" cy="100" r="80" id="ringMiners"/>
+            <circle class="ring-validators" cx="100" cy="100" r="80"/>
+            <circle class="ring-stakers" cx="100" cy="100" r="80"/>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-center-val">21M</div>
+            <div class="ring-center-lbl">Total TAO</div>
+          </div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--indigo)"></div><span class="legend-label">Miners</span><span class="legend-pct">70%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#7B6FF8"></div><span class="legend-label">Validators</span><span class="legend-pct">18%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div><span class="legend-label">Stakers / Subnet Pool</span><span class="legend-pct">12%</span></div>
+        </div>
+      </div>
+      <div class="supply-facts rv d2">
+        <div class="sfact">
+          <div class="sfact-title">21 Million Hard Cap</div>
+          <p class="sfact-body">Identical to Bitcoin's supply ceiling. Programmed scarcity drives long-term value. No central authority can inflate or change this.</p>
+          <div class="sfact-val">MAX_SUPPLY = 21,000,000 TAO</div>
+        </div>
+        <div class="sfact">
+          <div class="sfact-title">Fair Launch — No Pre-mine</div>
+          <p class="sfact-body">Launched January 2021 with zero tokens allocated to insiders, VCs, or founders. Every single TAO has been earned through network participation.</p>
+          <div class="sfact-val">Pre-mine allocation = 0%</div>
+        </div>
+        <div class="sfact">
+          <div class="sfact-title">Halving Schedule</div>
+          <p class="sfact-body">Like Bitcoin, TAO undergoes periodic halvings that reduce new token issuance. The December 2025 halving cut daily emissions from 7,200 to 3,600 TAO.</p>
+          <div class="sfact-val">Current: 3,600 TAO / day</div>
+        </div>
+        <div class="sfact">
+          <div class="sfact-title">Proof of Intelligence</div>
+          <p class="sfact-body">Rewards flow to miners and validators producing the most useful AI outputs — not to those solving arbitrary computational puzzles.</p>
+          <div class="sfact-val">Mechanism: Yuma Consensus</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="halving-section" id="halving">
+  <div class="section-wrap">
+    <div class="eyebrow light rv">Emission History</div>
+    <h2 class="sh2 light rv d1">The TAO halving timeline.</h2>
+    <div class="halving-timeline rv d2">
+      <div class="ht-line"></div>
+      <div class="ht-event">
+        <div class="ht-dot past">2021</div>
+        <div class="ht-content">
+          <div class="ht-year">January 2021</div>
+          <div class="ht-title">Genesis — Fair Launch</div>
+          <p class="ht-body">NeuralChain launches with zero pre-mine, zero VC allocation. The first TAO are minted as block rewards to miners and validators who contribute real AI work.</p>
+          <div class="ht-emission">Emission rate: 7,200 TAO / day</div>
+        </div>
+      </div>
+      <div class="ht-event">
+        <div class="ht-dot past">2023</div>
+        <div class="ht-content">
+          <div class="ht-year">2023</div>
+          <div class="ht-title">Subnet Explosion</div>
+          <p class="ht-body">The subnet system launches, enabling anyone to create specialized AI markets. Registrations explode. The network evolves from a single AI task to a full ecosystem of 50+ specialized markets.</p>
+          <div class="ht-emission">Network growth: 50+ subnets registered</div>
+        </div>
+      </div>
+      <div class="ht-event">
+        <div class="ht-dot current">NOW</div>
+        <div class="ht-content">
+          <div class="ht-year">December 2025</div>
+          <div class="ht-title">First Halving ← We Are Here</div>
+          <p class="ht-body">The first halving event cuts daily emissions from 7,200 to 3,600 TAO. Supply growth slows significantly. Institutional interest grows — Grayscale files for a TAO Trust. Market cap reaches $3.43B.</p>
+          <div class="ht-emission">Emission rate: 3,600 TAO / day ↓ 50%</div>
+        </div>
+      </div>
+      <div class="ht-event">
+        <div class="ht-dot future">2028</div>
+        <div class="ht-content">
+          <div class="ht-year">~2028 (projected)</div>
+          <div class="ht-title">Second Halving</div>
+          <p class="ht-body">The next halving will reduce emissions to approximately 1,800 TAO per day, further compressing supply growth as network utility and adoption continue to expand.</p>
+          <div class="ht-emission">Projected: 1,800 TAO / day</div>
+        </div>
+      </div>
+      <div class="ht-event">
+        <div class="ht-dot future">∞</div>
+        <div class="ht-content">
+          <div class="ht-year">Long-term</div>
+          <div class="ht-title">Approaching Maximum Supply</div>
+          <p class="ht-body">Halvings continue until total TAO approaches the 21 million hard cap. At that point, network security and miner incentives are sustained by transaction fees and subnet revenue — exactly like Bitcoin's long-term model.</p>
+          <div class="ht-emission">Hard cap: 21,000,000 TAO</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="uses-section" id="uses">
+  <div class="section-wrap">
+    <div class="eyebrow dark rv">Token Utility</div>
+    <h2 class="sh2 dark-t rv d1">TAO does real work in<br/>the network.</h2>
+    <div class="uses-grid">
+      <div class="use-card rv d1">
+        <div class="uc-icon">⛏️</div>
+        <div class="uc-title">Mining Rewards</div>
+        <p class="uc-body">Miners earn TAO proportional to the quality of their AI outputs as scored by validators. The better the output, the higher the reward share from daily emissions.</p>
+      </div>
+      <div class="use-card rv d2">
+        <div class="uc-icon">⚖️</div>
+        <div class="uc-title">Validator Incentives</div>
+        <p class="uc-body">Validators earn TAO for accurately scoring miner outputs. Consistent, honest scoring leads to larger reward shares. Collusion and inaccuracy reduce earnings.</p>
+      </div>
+      <div class="use-card rv d3">
+        <div class="uc-icon">🏦</div>
+        <div class="uc-title">Staking</div>
+        <p class="uc-body">Stake TAO into subnets to signal which ones deserve greater emissions. The more TAO staked in a subnet, the greater its reward allocation and market value.</p>
+      </div>
+      <div class="use-card rv d1">
+        <div class="uc-icon">🗳️</div>
+        <div class="uc-title">Governance</div>
+        <p class="uc-body">TAO holders participate in network governance through the Senate — voting on proposals from the Triumvirate that shape the future of the protocol.</p>
+      </div>
+      <div class="use-card rv d2">
+        <div class="uc-icon">🔗</div>
+        <div class="uc-title">Subnet Registration</div>
+        <p class="uc-body">Bond TAO to register a new subnet slot on the network. This creates economic alignment between subnet creators and the long-term health of the ecosystem.</p>
+      </div>
+      <div class="use-card rv d3">
+        <div class="uc-icon">💱</div>
+        <div class="uc-title">Service Payments</div>
+        <p class="uc-body">Applications and users pay TAO to access intelligence from subnets — text generation, image synthesis, data queries. TAO is the universal settlement currency.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tok-cta" id="tcta">
+  <div class="tc-inner rv">
+    <div class="eyebrow light" style="justify-content:center;margin-bottom:28px">Get Started</div>
+    <h2 class="tc-h2">Ready to earn <span class="grad">TAO?</span></h2>
+    <p class="tc-p">Join thousands of miners, validators, and stakers already earning TAO by contributing to the world's most ambitious decentralized AI network.</p>
+    <div class="tc-btns">
+      <a href="ecosystem.html" class="btn-grad">Become a Miner →</a>
+      <a href="build.html" class="btn-outline-w">Read the Docs</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="ft-top">
+    <a href="index.html" class="ft-logo">NeuralChain</a>
+    <nav class="ft-nav">
+      <div class="ft-col"><h4>Network</h4><ul><li><a href="subnets.html">Subnets</a></li><li><a href="ecosystem.html">Miners</a></li><li><a href="ecosystem.html">Validators</a></li></ul></div>
+      <div class="ft-col"><h4>Token</h4><ul><li><a href="token.html">TAO Overview</a></li><li><a href="token.html">Tokenomics</a></li><li><a href="token.html">Halving</a></li></ul></div>
+      <div class="ft-col"><h4>Resources</h4><ul><li><a href="about.html">Whitepaper</a></li><li><a href="build.html">Docs</a></li><li><a href="about.html">Blog</a></li></ul></div>
+    </nav>
+  </div>
+  <div class="ft-bot"><p>© 2026 NeuralChain — Portfolio by Soham Gorhe</p><div class="live"><div class="live-dot"></div>Network live · 50+ subnets</div></div>
+</footer>
+
+<script>
+const cur=document.getElementById('cur'),curR=document.getElementById('curR');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function a(){rx+=(mx-rx)*.13;ry+=(my-ry)*.13;cur.style.left=mx+'px';cur.style.top=my+'px';curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(a);})();
+document.querySelectorAll('a,button').forEach(el=>{el.addEventListener('mouseenter',()=>{cur.style.width='18px';cur.style.height='18px';cur.style.background='var(--cyan)';});el.addEventListener('mouseleave',()=>{cur.style.width='9px';cur.style.height='9px';cur.style.background='var(--indigo)';});});
+const ldFill=document.getElementById('ldFill'),ldPct=document.getElementById('ldPct'),loader=document.getElementById('loader');
+gsap.to('.ld-inner',{y:0,duration:.65,ease:'power3.out',delay:.1});
+let lp=0;const liv=setInterval(()=>{lp+=Math.random()*9+5;if(lp>=100){lp=100;clearInterval(liv);setTimeout(()=>gsap.to(loader,{opacity:0,duration:.4,ease:'power2.in',onComplete:()=>{loader.style.display='none';bootHero();}}),200);}ldFill.style.width=lp+'%';ldPct.textContent=Math.floor(lp)+'%';},50);
+function bootHero(){gsap.to('.th-h1',{opacity:1,y:0,duration:1,ease:'power3.out',delay:.1});gsap.to('.th-bottom',{opacity:1,y:0,duration:.8,ease:'power3.out',delay:.5});}
+// MINI THREE.JS — spinning TAO orbit
+(function(){
+  const canvas=document.getElementById('tok-canvas');
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  const scene=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(50,2,.1,1000);cam.position.z=5;
+  function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
+  resize();window.addEventListener('resize',resize);
+  // Central sphere
+  const sphere=new THREE.Mesh(new THREE.SphereGeometry(.8,32,32),new THREE.MeshBasicMaterial({color:0x5B4FE8,transparent:true,opacity:.15,wireframe:true}));
+  scene.add(sphere);
+  // Orbit rings
+  for(let i=0;i<3;i++){
+    const r=1.5+i*.6;
+    const geo=new THREE.TorusGeometry(r,.008,8,80);
+    const mat=new THREE.MeshBasicMaterial({color:i===1?0x00D4FF:0x5B4FE8,transparent:true,opacity:.12+i*.04});
+    const torus=new THREE.Mesh(geo,mat);
+    torus.rotation.x=Math.PI/2+i*.3;torus.rotation.z=i*.4;
+    scene.add(torus);
+  }
+  // Orbiting nodes
+  const orbNodes=[];
+  for(let i=0;i<16;i++){
+    const angle=i*(Math.PI*2/16);const r=1.5+Math.random()*.8;
+    const m=new THREE.Mesh(new THREE.SphereGeometry(.04,8,8),new THREE.MeshBasicMaterial({color:i%3===0?0x00D4FF:0x5B4FE8}));
+    m.userData={angle,r,speed:.004+Math.random()*.003,ry:Math.random()*Math.PI};
+    orbNodes.push(m);scene.add(m);
+  }
+  let t=0;
+  (function a(){requestAnimationFrame(a);t+=.005;
+    sphere.rotation.y=t*.3;sphere.rotation.x=t*.15;
+    orbNodes.forEach(m=>{m.userData.angle+=m.userData.speed;m.position.x=Math.cos(m.userData.angle)*m.userData.r;m.position.z=Math.sin(m.userData.angle)*m.userData.r;m.position.y=Math.sin(t+m.userData.ry)*.5;});
+    renderer.render(scene,cam);
+  })();
+})();
+const ro=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('in');});},{threshold:.1});
+document.querySelectorAll('.rv').forEach(el=>ro.observe(el));
+</script>
+</body>
+</html>
