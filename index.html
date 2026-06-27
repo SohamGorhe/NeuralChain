@@ -383,38 +383,29 @@ footer{background:var(--black);border-top:1px solid rgba(255,255,255,.06);paddin
   .ft-top{flex-direction:column;gap:36px;}.ft-nav{gap:32px;flex-wrap:wrap;}
 
   /* ── MOBILE 3D PANEL FIXES ── */
-  .h3d-panel{
-    padding:0 20px;
-    top:50%;
-    transform:translateY(-50%);
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-  }
+  /* Do NOT change position/transform on panels — JS controls that */
+  /* Just fix padding, font sizes, and hide overlapping elements */
+  .h3d-panel{ padding:0 20px; }
   .h3d-panel h1,.h3d-panel h2{
-    font-size:clamp(1.8rem,7.5vw,2.8rem);
+    font-size:clamp(1.75rem,7vw,2.6rem);
     max-width:100%;
     margin-bottom:12px;
     line-height:1.18;
   }
   .h3d-panel p{
-    font-size:.85rem;
+    font-size:.84rem;
     max-width:100%;
     line-height:1.68;
-    display:-webkit-box;
-    -webkit-line-clamp:3;
-    -webkit-box-orient:vertical;
-    overflow:hidden;
   }
-  /* Ghost word causes overlap — hidden on mobile */
+  /* Ghost word — hidden on mobile, it overlaps body text */
   .h3d-ghost{ display:none !important; }
-  /* Stat moves bottom-left, smaller */
+  /* Stat — move to bottom-left, smaller, away from text */
   .h3d-stat{
     bottom:68px;left:20px;right:auto;text-align:left;
   }
-  .h3d-stat-val{ font-size:clamp(1.3rem,5vw,1.8rem); }
-  .h3d-stat-lbl{ font-size:.52rem; }
-  /* Dots shift to avoid stat */
+  .h3d-stat-val{ font-size:clamp(1.2rem,4.5vw,1.7rem); }
+  .h3d-stat-lbl{ font-size:.5rem;margin-top:4px; }
+  /* Dots */
   .h3d-dots{ bottom:40px;left:20px; }
   .h3d-scroll-hint{ bottom:40px; }
   .h3d-tag{ font-size:.58rem;margin-bottom:10px; }
@@ -926,6 +917,9 @@ updateNav();
     else scrollHint.classList.add('show');
 
     /* Panel opacity — crossfade */
+    // On mobile: vertically center panels (JS-driven since CSS transform conflicts)
+    const _mob = window.innerWidth < 900;
+    const vhOffset = _mob ? (window.innerHeight * .5 - 140) : 0;
     panels.forEach((p,i)=>{
       let op=0,ty=20;
       if(i===panelI){
@@ -934,7 +928,15 @@ updateNav();
         else                {op=1;ty=0;}
       }
       p.style.opacity=op;
-      p.style.transform=`translateY(${ty}px)`;
+      // On mobile: anchor to vertical center + fade offset
+      // On desktop: normal absolute positioning from top
+      if(_mob){
+        p.style.top = vhOffset + 'px';
+        p.style.transform = `translateY(${ty}px)`;
+      } else {
+        p.style.top = '';
+        p.style.transform = `translateY(${ty}px)`;
+      }
     });
 
     /* ── Camera ── */
