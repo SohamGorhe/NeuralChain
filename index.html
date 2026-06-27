@@ -368,47 +368,23 @@ footer{background:var(--black);border-top:1px solid rgba(255,255,255,.06);paddin
 
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
-  #nav{padding:0 20px;}.nlinks{display:none;}
-  #what,#token,#ecosystem,#manifesto,#build{padding-left:20px;padding-right:20px;}
+  #nav{padding:0 24px;}
+  .nlinks{display:none;}
+  #what,#token,#ecosystem,#manifesto,#build{padding-left:24px;padding-right:24px;}
   .two-col,.tok-body,.man-cols,.build-grid{grid-template-columns:1fr;gap:40px;}
   .tok-metrics{grid-template-columns:1fr 1fr;}
   .tok-top{flex-direction:column;gap:16px;}
   .eco-row{grid-template-columns:40px 1fr;}
   .eco-r{grid-column:2;}
   .bc{padding:44px 28px;}
-  .sub-hdr,.sub-hint{padding-left:20px;padding-right:20px;}
-  .sub-strip{padding:0 20px;}
+  .sub-hdr,.sub-hint{padding-left:24px;padding-right:24px;}
+  .sub-strip{padding:0 24px;}
+  .h3d-panel{padding:0 24px;}
+  .h3d-ghost{display:none;}
+  footer{padding:56px 24px 36px;}
+  .ft-top{flex-direction:column;gap:36px;}
+  .ft-nav{gap:32px;flex-wrap:wrap;}
   #subnets{padding-left:0;padding-right:0;}
-  footer{padding:56px 20px 36px;}
-  .ft-top{flex-direction:column;gap:36px;}.ft-nav{gap:32px;flex-wrap:wrap;}
-
-  /* ── MOBILE 3D PANEL FIXES ── */
-  /* Do NOT change position/transform on panels — JS controls that */
-  /* Just fix padding, font sizes, and hide overlapping elements */
-  .h3d-panel{ padding:0 20px; }
-  .h3d-panel h1,.h3d-panel h2{
-    font-size:clamp(1.75rem,7vw,2.6rem);
-    max-width:100%;
-    margin-bottom:12px;
-    line-height:1.18;
-  }
-  .h3d-panel p{
-    font-size:.84rem;
-    max-width:100%;
-    line-height:1.68;
-  }
-  /* Ghost word — hidden on mobile, it overlaps body text */
-  .h3d-ghost{ display:none !important; }
-  /* Stat — move to bottom-left, smaller, away from text */
-  .h3d-stat{
-    bottom:68px;left:20px;right:auto;text-align:left;
-  }
-  .h3d-stat-val{ font-size:clamp(1.2rem,4.5vw,1.7rem); }
-  .h3d-stat-lbl{ font-size:.5rem;margin-top:4px; }
-  /* Dots */
-  .h3d-dots{ bottom:40px;left:20px; }
-  .h3d-scroll-hint{ bottom:40px; }
-  .h3d-tag{ font-size:.58rem;margin-bottom:10px; }
 }
 </style>
 </head>
@@ -858,8 +834,6 @@ updateNav();
   const scrollHint=document.getElementById('scrollHint');
 
   let scrollProg=0;
-  // Ensure panel 0 is visible immediately on load
-  if(panels[0]) panels[0].style.opacity='1';
   ScrollTrigger.create({
     trigger:'#hero3d',
     start:'top top',
@@ -871,42 +845,15 @@ updateNav();
   function smoothstep(t){return t*t*(3-2*t);}
 
   let mmx=0,mmy=0;
-  // Desktop — mouse parallax
   document.addEventListener('mousemove',e=>{
-    if(!isMobile){
-      mmx=(e.clientX/innerWidth-.5)*.5;
-      mmy=(e.clientY/innerHeight-.5)*.35;
-    }
+    mmx=(e.clientX/innerWidth-.5)*.5;
+    mmy=(e.clientY/innerHeight-.5)*.35;
   });
-  // Mobile — gyroscope / touch tilt parallax
-  if(isMobile){
-    window.addEventListener('deviceorientation',e=>{
-      if(e.gamma!=null){
-        mmx = Math.max(-1,Math.min(1, e.gamma/30));  // tilt left/right
-        mmy = Math.max(-1,Math.min(1, e.beta/40));   // tilt forward/back
-      }
-    });
-    document.addEventListener('touchmove',e=>{
-      const t=e.touches[0];
-      mmx=(t.clientX/innerWidth-.5)*.8;
-      mmy=(t.clientY/innerHeight-.5)*.5;
-    },{passive:true});
-  }
-
-  // Mobile detection — boost animation energy on mobile
-  const isMobile = window.innerWidth < 900;
-  const tickSpeed = isMobile ? .008 : .003;   // 2.5× faster idle on mobile
-  const bobAmp   = isMobile ? .9 : .35;        // bigger scene sway on mobile
-  const nodeFlicker = isMobile ? 0.38 : 0.22; // more node pulse amplitude
-  const glowAmp  = isMobile ? 0.85 : 0.5;     // bigger glow breathe on mobile
-  // On mobile: more frequent pulse re-activation
-  const pulseReactivate = isMobile ? 0.009 : 0.003;
-  const pulseSpeedMult  = isMobile ? 1.8 : 1.0; // pulses travel faster on mobile
 
   let tick=0,frame=0;
   (function anim(){
     requestAnimationFrame(anim);
-    tick+=tickSpeed; frame++;
+    tick+=.003; frame++;
 
     /* ── Panel scroll logic ── */
     const panelF=scrollProg*4;
@@ -919,30 +866,15 @@ updateNav();
     else scrollHint.classList.add('show');
 
     /* Panel opacity — crossfade */
-    const _mob = window.innerWidth < 900;
-    const vhOffset = _mob ? (window.innerHeight * .5 - 140) : 0;
     panels.forEach((p,i)=>{
-      let op=0,ty=0;
+      let op=0,ty=20;
       if(i===panelI){
-        // Special case: very start of scroll — show panel fully
-        if(panelF < 0.01){
-          op=1; ty=0;
-        } else if(panelT<.15){
-          op=panelT/.15; ty=(1-op)*18;
-        } else if(panelT>.85){
-          op=1-(panelT-.85)/.15; ty=(1-op)*-18;
-        } else {
-          op=1; ty=0;
-        }
+        if(panelT<.15)      {op=panelT/.15;ty=(1-op)*20;}
+        else if(panelT>.85) {op=1-(panelT-.85)/.15;ty=(1-op)*-20;}
+        else                {op=1;ty=0;}
       }
       p.style.opacity=op;
-      if(_mob){
-        p.style.top = vhOffset + 'px';
-        p.style.transform = `translateY(${ty}px)`;
-      } else {
-        p.style.top = '';
-        p.style.transform = `translateY(${ty}px)`;
-      }
+      p.style.transform=`translateY(${ty}px)`;
     });
 
     /* ── Camera ── */
@@ -954,24 +886,24 @@ updateNav();
     cam.rotation.x=lerp(from.rx,to.rx,st)+mmy*.08;
     cam.rotation.y=lerp(from.ry,to.ry,st)+mmx*.08;
 
-    /* ── Scene bob — more dramatic on mobile ── */
-    scene.position.y=Math.sin(tick*.55)*bobAmp;
-    if(isMobile) scene.rotation.y+=.004; // continuous slow auto-rotate on mobile
+    /* ── Gentle scene bob ── */
+    scene.position.y=Math.sin(tick*.55)*.35;
 
     /* ── PULSE NODES: each node scales up/down on its own phase ── */
     const allNodeMeshes=[...indigoNodes,...midNodes,...cyanNodes];
     allNodeMeshes.forEach(m=>{
-      const s=m._baseScale*(1+nodeFlicker*Math.sin(tick*1.8+m._phase));
+      const s=m._baseScale*(1+0.22*Math.sin(tick*1.8+m._phase));
       m.scale.setScalar(s);
+      // brightness flicker
       const bright=0.7+0.3*Math.sin(tick*2.2+m._phase);
       m.material.opacity=bright;
     });
 
-    /* ── GLOW HALOS pulse in anti-phase ── */
+    /* ── GLOW HALOS pulse in anti-phase (breathe outward) ── */
     [...indigoGlows,...cyanGlows].forEach(g=>{
-      const s=1+glowAmp*Math.sin(tick*1.4+g._phase);
+      const s=1+0.5*Math.sin(tick*1.4+g._phase);
       g.scale.setScalar(s);
-      g.material.opacity=0.04+0.07*Math.sin(tick*1.4+g._phase+Math.PI);
+      g.material.opacity=0.04+0.05*Math.sin(tick*1.4+g._phase+Math.PI);
     });
 
     /* ── SIGNAL PULSES travel along edges ── */
@@ -981,11 +913,11 @@ updateNav();
 
       if(!pd.active){
         // randomly re-activate
-        if(Math.random()<pulseReactivate){
+        if(Math.random()<0.003){
           pd.active=true;
           pd.t=0;
           pd.edge=Math.floor(Math.random()*edges.length);
-          pd.speed=(0.004+Math.random()*0.006)*pulseSpeedMult;
+          pd.speed=0.004+Math.random()*0.006;
         }
         pulseMeshes[i].material.opacity=0;
         return;
