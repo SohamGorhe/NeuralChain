@@ -858,6 +858,8 @@ updateNav();
   const scrollHint=document.getElementById('scrollHint');
 
   let scrollProg=0;
+  // Ensure panel 0 is visible immediately on load
+  if(panels[0]) panels[0].style.opacity='1';
   ScrollTrigger.create({
     trigger:'#hero3d',
     start:'top top',
@@ -917,19 +919,23 @@ updateNav();
     else scrollHint.classList.add('show');
 
     /* Panel opacity — crossfade */
-    // On mobile: vertically center panels (JS-driven since CSS transform conflicts)
     const _mob = window.innerWidth < 900;
     const vhOffset = _mob ? (window.innerHeight * .5 - 140) : 0;
     panels.forEach((p,i)=>{
-      let op=0,ty=20;
+      let op=0,ty=0;
       if(i===panelI){
-        if(panelT<.15)      {op=panelT/.15;ty=(1-op)*20;}
-        else if(panelT>.85) {op=1-(panelT-.85)/.15;ty=(1-op)*-20;}
-        else                {op=1;ty=0;}
+        // Special case: very start of scroll — show panel fully
+        if(panelF < 0.01){
+          op=1; ty=0;
+        } else if(panelT<.15){
+          op=panelT/.15; ty=(1-op)*18;
+        } else if(panelT>.85){
+          op=1-(panelT-.85)/.15; ty=(1-op)*-18;
+        } else {
+          op=1; ty=0;
+        }
       }
       p.style.opacity=op;
-      // On mobile: anchor to vertical center + fade offset
-      // On desktop: normal absolute positioning from top
       if(_mob){
         p.style.top = vhOffset + 'px';
         p.style.transform = `translateY(${ty}px)`;
